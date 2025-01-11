@@ -9,9 +9,9 @@ import java.io.Serializable;
  * @version 2.0
  */
 
-public class Product implements Serializable
+public class Product implements Comparable<Product>
 {
-  private static final long serialVersionUID = 20092506;
+
   private String theProductNum;       // Product number
   private String theDescription;      // Description of product
   private double thePrice;            // Price of product
@@ -32,12 +32,12 @@ public class Product implements Serializable
     thePrice       = aPrice;          // Price of product
     theQuantity    = aQuantity;       // Quantity involved
   }
-  
+  // getter methods
   public String getProductNum()  { return theProductNum; }
   public String getDescription() { return theDescription; }
   public double getPrice()       { return thePrice; }
   public int    getQuantity()    { return theQuantity; }
-  
+  // setter methods
   public void setProductNum( String aProductNum )
   { 
     theProductNum = aProductNum;
@@ -57,5 +57,9 @@ public class Product implements Serializable
   { 
     theQuantity = aQuantity;
   }
-
+@Override
+  public int compareTo(Product p1){
+    // fill in
+  return this.getProductNum().compareTo(p1.getProductNum());
+}
 }

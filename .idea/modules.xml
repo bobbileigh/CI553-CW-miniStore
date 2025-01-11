@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/CI553-CW-miniStore-main.iml" filepath="$PROJECT_DIR$/CI553-CW-miniStore-main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Tests.iml" filepath="$PROJECT_DIR$/Tests.iml" />
     </modules>
   </component>
 </project>

@@ -13,9 +13,8 @@ import java.util.Locale;
  * @version 2.2
  *
  */
-public class Basket extends ArrayList<Product> implements Serializable
+public class Basket extends ArrayList<Product>
 {
-  private static final long serialVersionUID = 1;
   private int    theOrderNum = 0;          // Order number
   
   /**
@@ -64,6 +63,7 @@ public class Basket extends ArrayList<Product> implements Serializable
    * Returns a description of the products in the basket suitable for printing.
    * @return a string description of the basket products
    */
+  //don't need to touch
   public String getDetails()
   {
     Locale uk = Locale.UK;

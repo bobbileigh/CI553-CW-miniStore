@@ -1,11 +1,13 @@
 package clients.cashier;
 
 import catalogue.Basket;
+import catalogue.BetterBasket;
 import catalogue.Product;
 import debug.DEBUG;
 import middle.*;
 
 import java.util.Observable;
+
 
 /**
  * Implements the Model of the cashier client
@@ -30,8 +32,8 @@ public class CashierModel extends Observable
 
   public CashierModel(MiddleFactory mf)
   {
-    try                                           // 
-    {      
+    try                                           //
+    {
       theStock = mf.makeStockReadWriter();        // Database access
       theOrder = mf.makeOrderProcessing();        // Process order
     } catch ( Exception e )
@@ -40,7 +42,7 @@ public class CashierModel extends Observable
     }
     theState   = State.process;                  // Current state
   }
-  
+
   /**
    * Get the Basket of products
    * @return basket
@@ -67,14 +69,14 @@ public class CashierModel extends Observable
         Product pr = theStock.getDetails(pn);   //  Get details
         if ( pr.getQuantity() >= amount )       //  In stock?
         {                                       //  T
-          theAction =                           //   Display 
+          theAction =                           //   Display
             String.format( "%s : %7.2f (%2d) ", //
               pr.getDescription(),              //    description
               pr.getPrice(),                    //    price
-              pr.getQuantity() );               //    quantity     
+              pr.getQuantity() );               //    quantity
           theProduct = pr;                      //   Remember prod.
           theProduct.setQuantity( amount );     //    & quantity
-          theState = State.checked;             //   OK await BUY 
+          theState = State.checked;             //   OK await BUY
         } else {                                //  F
           theAction =                           //   Not in Stock
             pr.getDescription() +" not in stock";
@@ -85,7 +87,7 @@ public class CashierModel extends Observable
       }
     } catch( StockException e )
     {
-      DEBUG.error( "%s\n%s", 
+      DEBUG.error( "%s\n%s",
             "CashierModel.doCheck", e.getMessage() );
       theAction = e.getMessage();
     }
@@ -107,7 +109,7 @@ public class CashierModel extends Observable
       } else {
         boolean stockBought =                   // Buy
           theStock.buyStock(                    //  however
-            theProduct.getProductNum(),         //  may fail              
+            theProduct.getProductNum(),         //  may fail
             theProduct.getQuantity() );         //
         if ( stockBought )                      // Stock bought
         {                                       // T
@@ -121,14 +123,14 @@ public class CashierModel extends Observable
       }
     } catch( StockException e )
     {
-      DEBUG.error( "%s\n%s", 
+      DEBUG.error( "%s\n%s",
             "CashierModel.doBuy", e.getMessage() );
       theAction = e.getMessage();
     }
     theState = State.process;                   // All Done
     setChanged(); notifyObservers(theAction);
   }
-  
+
   /**
    * Customer pays for the contents of the basket
    */
@@ -149,7 +151,7 @@ public class CashierModel extends Observable
        theBasket = null;
     } catch( OrderException e )
     {
-      DEBUG.error( "%s\n%s", 
+      DEBUG.error( "%s\n%s",
             "CashierModel.doCancel", e.getMessage() );
       theAction = e.getMessage();
     }
@@ -165,7 +167,7 @@ public class CashierModel extends Observable
   {
     setChanged(); notifyObservers("Welcome");
   }
-  
+
   /**
    * make a Basket when required
    */
@@ -190,9 +192,19 @@ public class CashierModel extends Observable
    * return an instance of a new Basket
    * @return an instance of a new Basket
    */
-  protected Basket makeBasket()
+  protected BetterBasket makeBasket()
   {
-    return new Basket();
+    return new BetterBasket();
+  }
+  /**
+   * Clear the contents of the basket - this change is to allow for the cashier to restart if they make an error
+   */
+  public void clearBasket(){
+    theBasket = null; //reset the basket
+    setChanged();
+    notifyObservers("Basket Cleared");
   }
 }
-  
+
+
+

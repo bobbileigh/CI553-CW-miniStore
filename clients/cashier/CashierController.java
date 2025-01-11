@@ -1,6 +1,11 @@
 package clients.cashier;
 
+import clients.cashier.CashierModel;
 
+import clients.cashier.CashierView;
+import clients.cashier.CashierController;
+import catalogue.BetterBasket;
+import catalogue.Product;
 /**
  * The Cashier Controller
  */
@@ -12,7 +17,7 @@ public class CashierController
 
   /**
    * Constructor
-   * @param model The model 
+   * @param model The model
    * @param view  The view from which the interaction came
    */
   public CashierController( CashierModel model, CashierView view )
@@ -37,7 +42,7 @@ public class CashierController
   {
     model.doBuy();
   }
-  
+
    /**
    * Bought interaction from view
    */
@@ -45,4 +50,11 @@ public class CashierController
   {
     model.doBought();
   }
+  /**
+   * Clear basket interaction from view
+   */
+  public void doClearBasket(){
+    model.clearBasket(); //call the model's method
+  }
 }
+

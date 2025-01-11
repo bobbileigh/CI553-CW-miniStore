@@ -18,10 +18,11 @@ public class CashierView implements Observer
 {
   private static final int H = 300;       // Height of window pixels
   private static final int W = 400;       // Width  of window pixels
-  
+
   private static final String CHECK  = "Check";
   private static final String BUY    = "Buy";
   private static final String BOUGHT = "Bought/Pay";
+  private static final String CLEAR = "Clear";
 
   private final JLabel      pageTitle  = new JLabel();
   private final JLabel      theAction  = new JLabel();
@@ -31,23 +32,24 @@ public class CashierView implements Observer
   private final JButton     theBtCheck = new JButton( CHECK );
   private final JButton     theBtBuy   = new JButton( BUY );
   private final JButton     theBtBought= new JButton( BOUGHT );
+  private final JButton     theBtClear = new JButton( CLEAR );
 
   private StockReadWriter theStock     = null;
   private OrderProcessing theOrder     = null;
   private CashierController cont       = null;
-  
+
   /**
    * Construct the view
    * @param rpc   Window in which to construct
    * @param mf    Factor to deliver order and stock objects
-   * @param x     x-coordinate of position of window on screen 
-   * @param y     y-coordinate of position of window on screen  
+   * @param x     x-coordinate of position of window on screen
+   * @param y     y-coordinate of position of window on screen
    */
-          
+
   public CashierView(  RootPaneContainer rpc,  MiddleFactory mf, int x, int y  )
   {
-    try                                           // 
-    {      
+    try                                           //
+    {
       theStock = mf.makeStockReadWriter();        // Database access
       theOrder = mf.makeOrderProcessing();        // Process order
     } catch ( Exception e )
@@ -62,24 +64,33 @@ public class CashierView implements Observer
 
     Font f = new Font("Monospaced",Font.PLAIN,12);  // Font f is
 
-    pageTitle.setBounds( 110, 0 , 270, 20 );       
-    pageTitle.setText( "Thank You for Shopping at MiniStrore" );                        
-    cp.add( pageTitle );  
-    
+    pageTitle.setBounds( 110, 0 , 270, 20 );
+    pageTitle.setText( "Thank You for Shopping at MiniStrore" );
+    cp.add( pageTitle );
+
     theBtCheck.setBounds( 16, 25+60*0, 80, 40 );    // Check Button
     theBtCheck.addActionListener(                   // Call back code
-      e -> cont.doCheck( theInput.getText() ) );
+            e -> cont.doCheck( theInput.getText() ) );
     cp.add( theBtCheck );                           //  Add to canvas
 
-    theBtBuy.setBounds( 16, 25+60*1, 80, 40 );      // Buy button 
+    theBtBuy.setBounds( 16, 25+60*1, 80, 40 );      // Buy button
     theBtBuy.addActionListener(                     // Call back code
-      e -> cont.doBuy() );
+            e -> cont.doBuy() );
     cp.add( theBtBuy );                             //  Add to canvas
 
     theBtBought.setBounds( 16, 25+60*3, 80, 40 );   // Bought Button
     theBtBought.addActionListener(                  // Call back code
-      e -> cont.doBought() );
+            e -> cont.doBought() );
     cp.add( theBtBought );                          //  Add to canvas
+
+    /*
+  adding the clear basket button to the GUI
+    */
+    theBtClear.setBounds(16, 25 + 60 * 2, 80, 40);  // Clear button
+    theBtClear.addActionListener(                  // Call back code
+            e -> cont.doClearBasket()
+    );
+    cp.add(theBtClear);  // Add canvas
 
     theAction.setBounds( 110, 25 , 270, 20 );       // Message area
     theAction.setText( "" );                        // Blank
@@ -91,7 +102,7 @@ public class CashierView implements Observer
 
     theSP.setBounds( 110, 100, 270, 160 );          // Scrolling pane
     theOutput.setText( "" );                        //  Blank
-    theOutput.setFont( f );                         //  Uses font  
+    theOutput.setFont( f );                         //  Uses font
     cp.add( theSP );                                //  Add to canvas
     theSP.getViewport().add( theOutput );           //  In TextArea
     rootWindow.setVisible( true );                  // Make visible
@@ -109,23 +120,30 @@ public class CashierView implements Observer
   }
 
   /**
+   * Refresh the basket display in the output area.
+   * @param basket The basket to display, or null if cleared.
+   */
+  public void refreshBasketView(Basket basket) {
+    if (basket == null) {
+      theOutput.setText("Customers order has been cleared."); // Clear message
+    } else {
+      theOutput.setText(basket.getDetails()); // Display basket details
+    }
+    theInput.requestFocus(); // Refocus on input
+  }
+
+  /**
    * Update the view
    * @param modelC   The observed model
-   * @param arg      Specific args 
+   * @param arg      Specific args
    */
   @Override
-  public void update( Observable modelC, Object arg )
-  {
-    CashierModel model  = (CashierModel) modelC;
-    String      message = (String) arg;
-    theAction.setText( message );
-    Basket basket = model.getBasket();
-    if ( basket == null )
-      theOutput.setText( "Customers order" );
-    else
-      theOutput.setText( basket.getDetails() );
-    
-    theInput.requestFocus();               // Focus is here
+  public void update(Observable modelC, Object arg) {
+    CashierModel model = (CashierModel) modelC;
+    String message = (String) arg;
+    theAction.setText(message);
+    refreshBasketView(model.getBasket()); // using the new refreshbasket method
   }
+
 
 }
