@@ -16,6 +16,7 @@ import middle.LocalMiddleFactory;
 import middle.MiddleFactory;
 import javax.swing.*;
 import java.awt.*;
+import java.lang.String;
 
 /**
  * Starts all the clients (user interface)  as a single application.
@@ -28,8 +29,10 @@ import java.awt.*;
 
 class Main
 {
-  public static void main (String args[])
+  public static void main (String[] args)
   {
+	GUIStyles.setupLookAndFeel();
+	
     new Main().begin();
   }
 
