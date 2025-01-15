@@ -172,4 +172,34 @@ public class StockR implements StockReader
     return new ImageIcon( filename );
   }
 
+  /**
+   * Searches for a product by its description (case-insensitive)
+   * @param searchTerm The search term to match against product descriptions
+   * @return Product object if a match is found, null otherwise
+   * @throws StockException if there's a problem accessing the database*/
+  public synchronized Product findByDescription(String searchTerm) throws StockException {
+    try {
+      Product dt = null;
+      ResultSet rs = getStatementObject().executeQuery(
+              "select ProductTable.productNo, description, price, stockLevel " +
+                      "from ProductTable, StockTable " +
+                      "where UPPER(ProductTable.description) LIKE '%" + searchTerm.toUpperCase() + "%' " +
+                      "and StockTable.productNo = ProductTable.productNo"
+      );
+
+      if (rs.next()) {
+        dt = new Product(
+                rs.getString("productNo"),
+                rs.getString("description"),
+                rs.getDouble("price"),
+                rs.getInt("stockLevel")
+        );
+      }
+      rs.close();
+      return dt;
+    } catch (SQLException e) {
+      throw new StockException("SQL findByDescription: " + e.getMessage());
+    }
+  }
+
 }

@@ -1,8 +1,8 @@
 package clients.customer;
-
 import catalogue.Basket;
 import catalogue.Product;
 import debug.DEBUG;
+import dbAccess.StockR;
 import middle.MiddleFactory;
 import middle.OrderProcessing;
 import middle.StockException;
@@ -31,17 +31,17 @@ public class CustomerModel extends Observable
    */
   public CustomerModel(MiddleFactory mf)
   {
-    try                                          // 
-    {  
+    try                                          //
+    {
       theStock = mf.makeStockReader();           // Database access
     } catch ( Exception e )
     {
       DEBUG.error("CustomerModel.constructor\n" +
-                  "Database not created?\n%s\n", e.getMessage() );
+              "Database not created?\n%s\n", e.getMessage() );
     }
     theBasket = makeBasket();                    // Initial Basket
   }
-  
+
   /**
    * return the Basket of products
    * @return the basket of products
@@ -52,45 +52,58 @@ public class CustomerModel extends Observable
   }
 
   /**
-   * Check if the product is in Stock
-   * @param productNum The product number
+   * Check if a product exists and add it to the basket
+   * @param input The product number (up to 4 characters) or product description to search for
+   * The method will:
+   * - First try to match input as a product number if 4 or fewer characters
+   * - Otherwise search for products with matching descriptions (case-insensitive)
+   * - Clear the current basket
+   * - If found, add one unit of the product to the basket
+   * - Update the product image
+   * - Notify observers with the result message
+   * Example searches:
+   * - "0001" searches by product number
+   * - "Toaster" or "toaster" searches by description
    */
-  public void doCheck(String productNum )
-  {
+  public void doCheck(String input) {
     theBasket.clear();                          // Clear s. list
     String theAction = "";
-    pn  = productNum.trim();                    // Product no.
-    int    amount  = 1;                         //  & quantity
-    try
-    {
-      if ( theStock.exists( pn ) )              // Stock Exists?
-      {                                         // T
-        Product pr = theStock.getDetails( pn ); //  Product
-        if ( pr.getQuantity() >= amount )       //  In stock?
-        { 
-          theAction =                           //   Display 
-            String.format( "%s : %7.2f (%2d) ", //
-              pr.getDescription(),              //    description
-              pr.getPrice(),                    //    price
-              pr.getQuantity() );               //    quantity
-          pr.setQuantity( amount );             //   Require 1
-          theBasket.add( pr );                  //   Add to basket
-          thePic = theStock.getImage( pn );     //    product
-        } else {                                //  F
-          theAction =                           //   Inform
-            pr.getDescription() +               //    product not
-            " not in stock" ;                   //    in stock
+    input = input.trim();                       // Remove whitespace
+
+    try {
+      // First try to find by product number
+      if (input.length() <= 4 && theStock.exists(input)) {
+        Product pr = theStock.getDetails(input);
+        if (pr.getQuantity() >= 1) {
+          theAction = String.format("%s : £%.2f (%d)",
+                  pr.getDescription(),
+                  pr.getPrice(),
+                  pr.getQuantity());
+          pr.setQuantity(1);
+          theBasket.add(pr);
+          thePic = theStock.getImage(input);
         }
-      } else {                                  // F
-        theAction =                             //  Inform Unknown
-          "Unknown product number " + pn;       //  product number
+      } else {
+        // Try to find by description
+        Product product = ((StockR)theStock).findByDescription(input);
+        if (product != null) {
+          theAction = String.format("%s : £%.2f (%d)",
+                  product.getDescription(),
+                  product.getPrice(),
+                  product.getQuantity());
+          product.setQuantity(1);
+          theBasket.add(product);
+          thePic = theStock.getImage(product.getProductNum());
+        } else {
+          theAction = "No products found matching: " + input;
+        }
       }
-    } catch( StockException e )
-    {
-      DEBUG.error("CustomerClient.doCheck()\n%s",
-      e.getMessage() );
+    } catch (StockException e) {
+      DEBUG.error("CustomerClient.doCheck()\n%s", e.getMessage());
     }
-    setChanged(); notifyObservers(theAction);
+
+    setChanged();
+    notifyObservers(theAction);
   }
 
   /**
@@ -104,16 +117,16 @@ public class CustomerModel extends Observable
     thePic = null;                            // No picture
     setChanged(); notifyObservers(theAction);
   }
-  
+
   /**
    * Return a picture of the product
    * @return An instance of an ImageIcon
-   */ 
+   */
   public ImageIcon getPicture()
   {
     return thePic;
   }
-  
+
   /**
    * ask for update of view callled at start
    */
@@ -130,5 +143,7 @@ public class CustomerModel extends Observable
   {
     return new Basket();
   }
-}
 
+
+
+}
