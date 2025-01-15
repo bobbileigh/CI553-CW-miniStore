@@ -4,7 +4,8 @@ import catalogue.Basket;
 import catalogue.Product;
 import debug.DEBUG;
 import middle.*;
-
+import middle.OrderProcessing;
+import middle.StockReadWriter;
 import java.util.Observable;
 
 /**
@@ -22,6 +23,7 @@ public class CashierModel extends Observable
 
   private StockReadWriter theStock     = null;
   private OrderProcessing theOrder     = null;
+  private ReceiptView receiptView;
 
   /**
    * Construct the model of the Cashier
@@ -34,6 +36,7 @@ public class CashierModel extends Observable
     {      
       theStock = mf.makeStockReadWriter();        // Database access
       theOrder = mf.makeOrderProcessing();        // Process order
+      receiptView = new ReceiptView(); //Initialise receipt view
     } catch ( Exception e )
     {
       DEBUG.error("CashierModel.constructor\n%s", e.getMessage() );
@@ -139,18 +142,20 @@ public class CashierModel extends Observable
     try
     {
       if ( theBasket != null &&
-           theBasket.size() >= 1 )            // items > 1
+              theBasket.size() >= 1 )            // items > 1
       {                                       // T
         theOrder.newOrder( theBasket );       //  Process order
+        // Add receipt display
+        receiptView.displayReceipt(String.valueOf(theBasket.getOrderNum()), theBasket);
         theBasket = null;                     //  reset
       }                                       //
       theAction = "Start New Order";            // New order
       theState = State.process;               // All Done
-       theBasket = null;
+      theBasket = null;
     } catch( OrderException e )
     {
-      DEBUG.error( "%s\n%s", 
-            "CashierModel.doCancel", e.getMessage() );
+      DEBUG.error( "%s\n%s",
+              "CashierModel.doCancel", e.getMessage() );
       theAction = e.getMessage();
     }
     theBasket = null;
